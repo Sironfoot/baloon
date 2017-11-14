@@ -13,8 +13,8 @@ import (
 // Fixture represents a test fixture. You usually have one per test suite.
 type Fixture struct {
 	config        FixtureConfig
-	TestSetups    []TestSetup
-	TestTeardowns []TestTeardown
+	testSetups    []TestSetup
+	testTeardowns []TestTeardown
 
 	appPath                  string
 	appProcess               *exec.Cmd
@@ -31,7 +31,7 @@ func (fixture *Fixture) Setup() error {
 	fixture.alreadyAttemptedSetup = true
 
 	for i, dbSetup := range fixture.config.DatabaseSetups {
-		err := dbSetup.Run(fixture.config.AppRoot)
+		err := dbSetup.run(fixture.config.AppRoot)
 		if err != nil {
 			return fmt.Errorf("Error running Database Setup at index %d: %s", i, err.Error())
 		}
@@ -142,7 +142,7 @@ func (fixture *Fixture) Teardown() error {
 
 	// run database teardown
 	for i, dbSetup := range fixture.config.DatabaseTeardowns {
-		err := dbSetup.Run(fixture.config.AppRoot)
+		err := dbSetup.run(fixture.config.AppRoot)
 		if err != nil {
 			return fmt.Errorf("Error running Database Teardown at index %d: %s", i, err.Error())
 		}
@@ -153,7 +153,7 @@ func (fixture *Fixture) Teardown() error {
 
 // AddTestSetup adds a TestSetup routine to the test Fixture
 func (fixture *Fixture) AddTestSetup(setup TestSetup) {
-	fixture.TestSetups = append(fixture.TestSetups, setup)
+	fixture.testSetups = append(fixture.testSetups, setup)
 }
 
 // TestSetup will run all TestSetup routines. This is run at the start of each individual test,
@@ -167,9 +167,9 @@ func (fixture *Fixture) TestSetup() error {
 		return fmt.Errorf("Fixture has already been teared down")
 	}
 
-	for i, testSetup := range fixture.TestSetups {
+	for i, testSetup := range fixture.testSetups {
 		for dbIndex, dbSetup := range testSetup.DatabaseSetups {
-			err := dbSetup.Run(fixture.config.AppRoot)
+			err := dbSetup.run(fixture.config.AppRoot)
 			if err != nil {
 				return fmt.Errorf("Error running Database Setup at index %d for TestSetup at index %d: %s",
 					dbIndex, i, err.Error())
@@ -186,7 +186,7 @@ func (fixture *Fixture) TestSetup() error {
 
 // AddTestTeardown adds a TestTeardown routine to the test Fixture
 func (fixture *Fixture) AddTestTeardown(teardown TestTeardown) {
-	fixture.TestTeardowns = append(fixture.TestTeardowns, teardown)
+	fixture.testTeardowns = append(fixture.testTeardowns, teardown)
 }
 
 // TestTeardown will run all TestTeardown routines. This is run at the end of each individual test,
@@ -200,9 +200,9 @@ func (fixture *Fixture) TestTeardown() error {
 		return fmt.Errorf("Fixture has already been teared down")
 	}
 
-	for i, testTeardown := range fixture.TestTeardowns {
+	for i, testTeardown := range fixture.testTeardowns {
 		for dbIndex, dbSetup := range testTeardown.DatabaseTeardowns {
-			err := dbSetup.Run(fixture.config.AppRoot)
+			err := dbSetup.run(fixture.config.AppRoot)
 			if err != nil {
 				return fmt.Errorf("Error running Database Setup at index %d for TestTeardown at index %d: %s",
 					dbIndex, i, err.Error())

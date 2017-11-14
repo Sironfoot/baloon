@@ -10,13 +10,19 @@ import (
 // DB represents a series of database scripts to run against a database given its Connection.
 // It uses database/sql behind the scenes so your database driver will need to support it.
 type DB struct {
+	// Connection stores database connection details including driver and connection string.
+	// Uses sql.DB so make sure your driver is imported correctly.
 	Connection DBConn
-	Script     Script
-	Scripts    []Script
+
+	// Script represents a Script to run on your database
+	Script Script
+
+	// Scripts represents multiple scripts to run on your database
+	Scripts []Script
 }
 
 // Run will run the database setup
-func (dbSetup DB) Run(appRoot string) error {
+func (dbSetup DB) run(appRoot string) error {
 	db, err := sql.Open(dbSetup.Connection.Driver, dbSetup.Connection.String)
 	if err != nil {
 		return fmt.Errorf("Error connecting to database: %s", err.Error())

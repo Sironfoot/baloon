@@ -1,3 +1,4 @@
+// Package baloon is a setup and teardown test fixture library for end-to-end testing of HTTP APIs written in Go.
 package baloon
 
 import (
@@ -7,26 +8,35 @@ import (
 	"time"
 )
 
+// These consts represent the 2 types of database scripts we can use, either literal or file path
 const (
-	// ScriptTypeLiteral ...
+	// ScriptTypeLiteral specifies literal database command text
 	ScriptTypeLiteral = 1
-	// ScriptTypePath ...
+	// ScriptTypePath specifies a glob file pattern for database commands stored in files
 	ScriptTypePath = 2
 )
 
-// DBConn ...
+// DBConn represents a database connection including the driver and connection string.
+// Uses sql.DB, so make sure your database driver package supports it and is imported.
 type DBConn struct {
+	// Driver is your database driver name, passed as the first argument to sql.Open
 	Driver string
+
+	// String is the database connection string, passed as the second argument to sql.Open
 	String string
 }
 
-// Script ...
+// Script represents a database script run either as a setup or teardown routine.
+// Command can either be a literal script, or a path (using globbing patterns) to a
+// script file or files.
 type Script struct {
-	Type    int
+	// Type is the Script type to use.
+	Type int
+	// Command is either a literal database command, or a file glob pattern, depending on the 'Type'.
 	Command string
 }
 
-// NewScript ...
+// NewScript returns a Script that represents a literal database command to run.
 func NewScript(command string) Script {
 	return Script{
 		Type:    ScriptTypeLiteral,
@@ -34,7 +44,7 @@ func NewScript(command string) Script {
 	}
 }
 
-// NewScriptPath ...
+// NewScriptPath returns a Script that represents a glob path to a script files or files to run.
 func NewScriptPath(path string) Script {
 	return Script{
 		Type:    ScriptTypePath,
@@ -42,31 +52,43 @@ func NewScriptPath(path string) Script {
 	}
 }
 
-// App ...
+// App represents settings and arguments for your Go HTTP API executable.
 type App struct {
-	Arguments         []string
+	// Arguments is a list of command line arguments to include when your Go executable is run.
+	Arguments []string
+	// WaitForOutputLine specifies a line of text that baloon should wait to appear in either stdout or stderr
+	// in order to signal that the App is ready to start excepting HTTP requests.
 	WaitForOutputLine string
-	WaitTimeout       time.Duration
+	// WaitTimeout is how long baloon should wait for the 'WaitForOutputLine' to appear.
+	WaitTimeout time.Duration
 }
 
-// FixtureConfig ...
+// FixtureConfig is a configuration object for your test Fixture.
 type FixtureConfig struct {
-	AppRoot           string
-	DatabaseSetups    []DB
-	AppSetup          App
-	DatabaseTeardowns []DB
-}
-
-// TestSetup ...
-type TestSetup struct {
+	// AppRoot is an absolute path to the root of your Go application directory, where your main.go file is located.
+	AppRoot string
+	// DatabaseSetups is a list of one or more database setup commands to run before the test suite is run.
 	DatabaseSetups []DB
-	Func           func()
+	// AppSetup specifies configuration settings for your Go app executable.
+	AppSetup App
+	// DatabaseTeardowns is a list of one or more database teardown commands to run after the test suite has run.
+	DatabaseTeardowns []DB
 }
 
-// TestTeardown ...
+// TestSetup represents database commands and a func to run at the beginning of each unit test.
+type TestSetup struct {
+	// DatabaseSetups is a list of one or more database setup commands to run before each unit test is run.
+	DatabaseSetups []DB
+	// Func is a function to run before each unit test is run.
+	Func func()
+}
+
+// TestTeardown represents database commands and a func to run at the end of each unit test.
 type TestTeardown struct {
+	// DatabaseTeardowns is a list of one or more database teardown commands to run after each unit test.
 	DatabaseTeardowns []DB
-	Func              func()
+	/// Func is a function to run after each unit test.
+	Func func()
 }
 
 func truncate(text string, maxLength int, affix string) string {
@@ -77,7 +99,7 @@ func truncate(text string, maxLength int, affix string) string {
 	return text[:maxLength] + affix
 }
 
-// NewFixture ...
+// NewFixture returns a Fixture, but also verifies that everything has been set up correctly.
 func NewFixture(config FixtureConfig) (Fixture, error) {
 	var fixture Fixture
 
