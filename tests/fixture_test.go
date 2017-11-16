@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/sironfoot/baloon"
 )
@@ -57,4 +58,127 @@ func TestNewFixture(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestFixtureSetup(t *testing.T) {
+	appRootPath, _ := filepath.Abs("./app/")
+
+	// can't run mutliple times
+	fixture, err := baloon.NewFixture(baloon.FixtureConfig{
+		AppRoot: appRootPath,
+		AppSetup: baloon.App{
+			RunArguments: []string{
+				"-ready_statement", "Running",
+			},
+			WaitForOutputLine: "Running",
+			WaitTimeout:       time.Second * 2,
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Setup()
+	if err != nil {
+		t.Errorf("Should have run successfully, but got error: %s", err.Error())
+	}
+
+	err = fixture.Setup()
+	if err == nil {
+		t.Errorf("Should get an error if running Setup() more than once.")
+	} else if err.Error() != "Setup() has already been called. Only run this function once for the test suite." {
+		t.Errorf("Wrong error returned when running Setup() more than once. Error was: %s", err.Error())
+	}
+
+	fixture.Close()
+
+	// check program runs correctly, and timeouts are dealt with
+	fixture, err = baloon.NewFixture(baloon.FixtureConfig{
+		AppRoot: appRootPath,
+		AppSetup: baloon.App{
+			RunArguments: []string{
+				"-ready_statement", "Hello world",
+			},
+			WaitForOutputLine: "Running",
+			WaitTimeout:       time.Millisecond * 100,
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Setup()
+	if err == nil {
+		t.Errorf("Should return error about program timeout")
+	} else if err.Error() != "Timeout waiting for program to start. Was looking for output line \"Running\"." {
+		t.Errorf("Wrong error returned about program timeout. Error was: %s", err.Error())
+	}
+
+	fixture.Close()
+}
+
+func TestFixtureTeardown(t *testing.T) {
+	appRootPath, _ := filepath.Abs("./app/")
+
+	// can't run mutliple times
+	fixture, err := baloon.NewFixture(baloon.FixtureConfig{
+		AppRoot: appRootPath,
+		AppSetup: baloon.App{
+			RunArguments: []string{
+				"-ready_statement", "Running",
+			},
+			WaitForOutputLine: "Running",
+			WaitTimeout:       time.Second * 2,
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Setup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Teardown()
+	if err != nil {
+		t.Errorf("Should have run successfully, but got error: %s", err.Error())
+	}
+
+	err = fixture.Teardown()
+	if err == nil {
+		t.Errorf("Should return an error if attempting to run Teardown() twice")
+	} else if err.Error() != "Teardown() has already been called. Only run this function once for the test suite." {
+		t.Errorf("Wrong error returned when running Teardown() more than once. Error was: %s", err.Error())
+	}
+
+	fixture.Close()
+
+	// can't run Teardown before Setup
+	fixture, err = baloon.NewFixture(baloon.FixtureConfig{
+		AppRoot: appRootPath,
+		AppSetup: baloon.App{
+			RunArguments: []string{
+				"-ready_statement", "Running",
+			},
+			WaitForOutputLine: "Running",
+			WaitTimeout:       time.Second * 2,
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Teardown()
+	if err == nil {
+		t.Errorf("Should return an error if attempting to run Teardown() before Setup()")
+	} else if err.Error() != "Please run Setup() first before calling Teardown()" {
+		t.Errorf("Wrong error returned when running Teardown() before Setup(). Error was: %s", err.Error())
+	}
+
+	fixture.Close()
 }
