@@ -12,6 +12,7 @@ import (
 const (
 	// ScriptTypeLiteral specifies literal database command text
 	ScriptTypeLiteral = 1
+
 	// ScriptTypePath specifies a glob file pattern for database commands stored in files
 	ScriptTypePath = 2
 )
@@ -32,6 +33,7 @@ type DBConn struct {
 type Script struct {
 	// Type is the Script type to use.
 	Type int
+
 	// Command is either a literal database command, or a file glob pattern, depending on the 'Type'.
 	Command string
 }
@@ -54,11 +56,13 @@ func NewScriptPath(path string) Script {
 
 // App represents settings and arguments for your Go HTTP API executable.
 type App struct {
-	// Arguments is a list of command line arguments to include when your Go executable is run.
-	Arguments []string
+	// RunArguments is a list of command line arguments to include when your Go executable is run.
+	RunArguments []string
+
 	// WaitForOutputLine specifies a line of text that baloon should wait to appear in either stdout or stderr
 	// in order to signal that the App is ready to start excepting HTTP requests.
 	WaitForOutputLine string
+
 	// WaitTimeout is how long baloon should wait for the 'WaitForOutputLine' to appear.
 	WaitTimeout time.Duration
 }
@@ -67,27 +71,23 @@ type App struct {
 type FixtureConfig struct {
 	// AppRoot is an absolute path to the root of your Go application directory, where your main.go file is located.
 	AppRoot string
+
 	// DatabaseSetups is a list of one or more database setup commands to run before the test suite is run.
 	DatabaseSetups []DB
+
 	// AppSetup specifies configuration settings for your Go app executable.
 	AppSetup App
+
 	// DatabaseTeardowns is a list of one or more database teardown commands to run after the test suite has run.
 	DatabaseTeardowns []DB
 }
 
-// TestSetup represents database commands and a func to run at the beginning of each unit test.
-type TestSetup struct {
-	// DatabaseSetups is a list of one or more database setup commands to run before each unit test is run.
-	DatabaseSetups []DB
-	// Func is a function to run before each unit test is run.
-	Func func()
-}
+// UnitTest represents database commands and a func to run at the beginning or end of each unit test.
+type UnitTest struct {
+	// DatabaseRoutines is a list of one or more database setup commands to run before each unit, or at the end of each unit test.
+	DatabaseRoutines []DB
 
-// TestTeardown represents database commands and a func to run at the end of each unit test.
-type TestTeardown struct {
-	// DatabaseTeardowns is a list of one or more database teardown commands to run after each unit test.
-	DatabaseTeardowns []DB
-	/// Func is a function to run after each unit test.
+	// Func is a function to run before each unit test is run.
 	Func func()
 }
 

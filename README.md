@@ -3,13 +3,13 @@ Baloon is a Setup and Teardown test fixture library for end-to-end testing of HT
 
 > **WARNING! Baloon API is unstable and may undergo changes. Please use with caution for the time being.**
 
-Baloon will setup a database with your sample data, compile and run your Go executable, run your tests, and teardown your database afterwards. It also supports setup and teardown routines per unit test.
+Baloon will setup a database with your sample data, build and run your Go executable, run your tests, and teardown your database afterwards. It also supports setup and teardown routines per unit test.
 
-Baloon is designed to be used in conjunction with an API testing library such [baloo](https://github.com/h2non/baloo) (which inspired me to write this test fixture library, hence the name baloon). The goal is to make HTTP API testing less brittle by providing clean and repeatable setup and teardown routines for your main external dependencies, namely databases and compiling/running your program.
+Baloon is designed to be used in conjunction with an API testing library such [baloo](https://github.com/h2non/baloo) (which inspired me to write this test fixture library, hence the name baloon). The goal is to make HTTP API testing less brittle by providing clean and repeatable setup and teardown processes for your main external dependencies, namely databases and compiling/running your program.
 
 ## Installation
 
-```bash
+```ssh
 go get github.com/sironfoot/baloon
 ```
 
@@ -87,7 +87,7 @@ Baloon uses the "database/sql" package, so will support any database that suppor
 import "_ "github.com/lib/pq"
 ```
 
-Scripts can be literal scripts (```CREATE DATABASE northwind;```), or paths to files containing scripts (```./sql/create tables.sql```). Paths are relative to your app root (see 1. App Root above). Paths support globbing patterns (e.g. ```./sql/*.sql```).
+Scripts can be literal scripts (`CREATE DATABASE northwind;`), or paths to files containing scripts (`./sql/create tables.sql`). Paths are relative to your app root (see 1. App Root above). Paths support globbing patterns (e.g. `./sql/*.sql`).
 
 #### 3. App Executable Setup
 
@@ -95,7 +95,7 @@ Here we provide instructions on how to run our Go HTTP API executable.
 
 ```go
 appSetup := baloon.App{
-	Arguments: []string{
+	RunArguments: []string{
 		"-port", "8080",
 		"-db_name", "northwind",
 		"-db_port", "5432",
@@ -106,9 +106,9 @@ appSetup := baloon.App{
 }
 ```
 
-Baloon will automatically compile our app into the root dir (with a random filename) using ```go build -o "./filename"```. It will run our app with the arguments provided, and delete our app executable afterwards.
+Baloon will automatically compile our app into the root dir (with a random filename) using `go build -o "./filename"`. It will run our app with the arguments provided, and delete our app executable afterwards.
 
-WaitForOutputLine tells Baloon to wait for a line of text to appear in the stdout or stderr to signal that our app is ready to start accepting HTTP requests. So configure your app to output an appropriate line, or use the standard ```Listening and serving HTTP on :8080``` that most Go HTTP Web frameworks output. If our app takes a few seconds to startup & initialise, we don't want tests executing against our app before it's ready.
+WaitForOutputLine tells Baloon to wait for a line of text to appear in the stdout or stderr to signal that our app is ready to start accepting HTTP requests. So configure your app to output an appropriate line, or use the standard `Listening and serving HTTP on :8080` message that most Go HTTP Web frameworks output. If our app takes a few seconds to startup & initialise, we don't want tests executing against our app before it's ready.
 
 #### 4. Database Teardown
 
@@ -129,6 +129,8 @@ databaseTeardowns := []baloon.DB{
 ```
 
 #### 5. Putting It All Together
+
+Make sure our fixture struct is declared as a package level variable, because we'll need it later.
 
 ```go
 var fixture baloon.Fixture
@@ -178,8 +180,8 @@ if err != nil {
 	log.Fatal(err)
 }
 
-fixture.AddTestSetup(baloon.TestSetup{
-	DatabaseSetups: []baloon.DB{
+fixture.AddUnitTestSetup(baloon.UnitTest{
+	DatabaseRoutines: []baloon.DB{
 		baloon.DB{
 			Connection: baloon.DBConn{
 				Driver: "postgres",
@@ -196,8 +198,8 @@ fixture.AddTestSetup(baloon.TestSetup{
 	},
 })
 
-fixture.AddTestTeardown(baloon.TestTeardown{
-	DatabaseTeardowns: []baloon.DB{
+fixture.AddUnitTestTeardown(baloon.UnitTest{
+	DatabaseRoutines: []baloon.DB{
 		baloon.DB{
 			Connection: baloon.DBConn{
 				Driver: "postgres",
@@ -218,8 +220,8 @@ Then use these in each unit test:
 
 ```go
 func TestCustomers_List(t *testing.T) {
-	fixture.TestSetup()
-	defer fixture.TestTeardown()
+	fixture.UnitTestSetup()
+	defer fixture.UnitTestTeardown()
 
 	// test code Here
 }
@@ -228,7 +230,7 @@ func TestCustomers_List(t *testing.T) {
 
 #### Dropping Database Connections
 
-Drop database commands can fail if there are open/active connections to the database. To make the setup and teardown more reliable, it's a good idea to drop these connections as well. The below example is for postgres:
+`DROP DATABASE` commands can fail if there are open/active connections to the database. To make setup and teardown more reliable, it's a good idea to drop these connections as well. Below is an example for postgres:
 
 ```go
 sqlDropConnections :=
