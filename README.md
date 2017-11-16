@@ -83,8 +83,8 @@ databaseSetups := []baloon.DB{
 		},
 		Scripts: []baloon.Script{
 			baloon.NewScriptPath("./sql/create tables.sql"),
-			baloon.NewScriptPath("./sql/create functions.sql")
-			baloon.NewScriptPath("./sql/create sprocs.sql")
+			baloon.NewScriptPath("./sql/create functions.sql"),
+			baloon.NewScriptPath("./sql/create sprocs.sql"),
 		},
 	},
 }
@@ -147,13 +147,13 @@ Make sure our fixture struct is declared as a package level variable, because we
 var fixture baloon.Fixture
 
 func TestMain(m *testing.M) {
-    // code from above goes here
+	// code from above goes here
 
 	setup := baloon.FixtureConfig{
 		AppRoot: appRoot,
 		DatabaseSetups: databaseSetups,
 		AppSetup: appSetup,
-		DatabaseTeardowns: databaseTeardowns
+		DatabaseTeardowns: databaseTeardowns,
 	}
 
 	fixture, err = baloon.NewFixture(setup)
@@ -177,7 +177,7 @@ func TestMain(m *testing.M) {
 }
 ```
 
-#### 6. Per Unit Test Setup and teardown
+#### 6. Per Unit Test Setup and Teardown
 
 We can run setup and teardown routines per individual unit test. A use case is to add sample data to our database to test against, but have that data reset after each test, as some tests might insert or delete data.
 
@@ -257,7 +257,7 @@ databaseTeardowns := []baloon.DB{
 			String: "postgres://user:pw@localhost:5432/?sslmode=disable",
 		},
 		Scripts: []baloon.Script{
-			baloon.NewScript(sqlDropConnections)
+			baloon.NewScript(sqlDropConnections),
 			baloon.NewScript("DROP DATABASE IF EXISTS northwind;"),
 		},
 	},
@@ -276,7 +276,7 @@ databaseSetups := []baloon.DB{
 			String: "postgres://user:pw@localhost:5432/?sslmode=disable",
 		},
 		Scripts: []baloon.Script{
-			baloon.NewScript(sqlDropConnections)
+			baloon.NewScript(sqlDropConnections),
 			baloon.NewScript("DROP DATABASE IF EXISTS northwind;"),
 			baloon.NewScript("CREATE DATABASE northwind;"),
 		},
