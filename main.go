@@ -13,17 +13,20 @@ const (
 	// ScriptTypeLiteral specifies literal database command text
 	ScriptTypeLiteral = 1
 
-	// ScriptTypePath specifies a glob file pattern for database commands stored in files
+	// ScriptTypePath specifies a glob file pattern for
+	// database commands stored in files
 	ScriptTypePath = 2
 )
 
 // DBConn represents a database connection including the driver and connection string.
 // Uses sql.DB, so make sure your database driver package supports it and is imported.
 type DBConn struct {
-	// Driver is your database driver name, passed as the first argument to sql.Open
+	// Driver is your database driver name, passed as the first
+	// argument to sql.Open
 	Driver string
 
-	// String is the database connection string, passed as the second argument to sql.Open
+	// String is the database connection string, passed as the
+	// second argument to sql.Open
 	String string
 }
 
@@ -34,7 +37,8 @@ type Script struct {
 	// Type is the Script type to use.
 	Type int
 
-	// Command is either a literal database command, or a file glob pattern, depending on the 'Type'.
+	// Command is either a literal database command, or a file
+	// glob pattern, depending on the 'Type'.
 	Command string
 }
 
@@ -56,35 +60,42 @@ func NewScriptPath(path string) Script {
 
 // App represents settings and arguments for your Go HTTP API executable.
 type App struct {
-	// RunArguments is a list of command line arguments to include when your Go executable is run.
+	// RunArguments is a list of command line arguments to
+	// include when your Go executable is run.
 	RunArguments []string
 
-	// WaitForOutputLine specifies a line of text that baloon should wait to appear in either stdout or stderr
-	// in order to signal that the App is ready to start excepting HTTP requests.
+	// WaitForOutputLine specifies a line of text that baloon should wait
+	// to appear in either stdout or stderr in order to signal that the App is
+	// ready to start excepting HTTP requests.
 	WaitForOutputLine string
 
-	// WaitTimeout is how long baloon should wait for the 'WaitForOutputLine' to appear.
+	// WaitTimeout is how long baloon should wait for the
+	// 'WaitForOutputLine' to appear.
 	WaitTimeout time.Duration
 }
 
 // FixtureConfig is a configuration object for your test Fixture.
 type FixtureConfig struct {
-	// AppRoot is an absolute path to the root of your Go application directory, where your main.go file is located.
+	// AppRoot is an absolute path to the root of your Go application directory,
+	// where your main.go file is located.
 	AppRoot string
 
-	// DatabaseSetups is a list of one or more database setup commands to run before the test suite is run.
+	// DatabaseSetups is a list of one or more database setup commands to run
+	// before the test suite is run.
 	DatabaseSetups []DB
 
 	// AppSetup specifies configuration settings for your Go app executable.
 	AppSetup App
 
-	// DatabaseTeardowns is a list of one or more database teardown commands to run after the test suite has run.
+	// DatabaseTeardowns is a list of one or more database teardown
+	// commands to run after the test suite has run.
 	DatabaseTeardowns []DB
 }
 
 // UnitTest represents database commands and a func to run at the beginning or end of each unit test.
 type UnitTest struct {
-	// DatabaseRoutines is a list of one or more database setup commands to run before each unit, or at the end of each unit test.
+	// DatabaseRoutines is a list of one or more database setup commands to
+	// run before each unit, or at the end of each unit test.
 	DatabaseRoutines []DB
 
 	// Func is a function to run before each unit test is run.

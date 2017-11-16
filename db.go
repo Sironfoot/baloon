@@ -10,8 +10,8 @@ import (
 // DB represents a series of database scripts to run against a database given its Connection.
 // It uses database/sql behind the scenes so your database driver will need to support it.
 type DB struct {
-	// Connection stores database connection details including driver and connection string.
-	// Uses sql.DB so make sure your driver is imported correctly.
+	// Connection stores database connection details including driver and connection
+	// string. Uses sql.DB so make sure your driver is imported correctly.
 	Connection DBConn
 
 	// Script represents a Script to run on your database
