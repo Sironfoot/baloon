@@ -1,3 +1,7 @@
+[![GoDoc](https://godoc.org/github.com/sironfoot/baloon?status.svg)](https://godoc.org/github.com/sironfoot/baloon)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sironfoot/baloon)](https://goreportcard.com/report/github.com/sironfoot/baloon)
+[![GitHub release](https://img.shields.io/badge/version-0.1-red.svg?style=flat)](https://github.com/sironfoot/baloon/releases)
+
 # baloon
 Baloon is a Setup and Teardown test fixture library for end-to-end testing of HTTP APIs written in Go.
 
