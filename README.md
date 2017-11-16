@@ -14,12 +14,19 @@ Baloon is designed to be used in conjunction with an API testing library such [b
 ## Installation
 
 ```ssh
-go get github.com/sironfoot/baloon
+go get gopkg.in/sironfoot/baloon.v0
+```
+
+Or using govendor:
+
+```ssh
+govendor fetch github.com/sironfoot/baloon@v0.1.0
 ```
 
 ## Requirements
 
 - Go 1.7+
+- An end-to-end HTTP API testing library (such as [baloo](https://github.com/h2non/baloo))
 
 ## Setup
 
