@@ -309,6 +309,25 @@ func TestMain(m *testing.M) {
 }
 ```
 
+#### Can I Have My Own Build Arguments?
+
+Yes. Simply use the BuildArguments property when defining the App Executable Setup:
+
+```go
+appSetup := baloon.App{
+	BuildArguments: []string{
+		"-o", "./my_rest_app",
+	},
+    RunArguments: []string{
+        "-ready_statement", "Test App is Ready",
+    },
+    WaitForOutputLine: "Test App is Ready",
+    WaitTimeout:       5 * time.Second,
+}
+```
+
+Here we are setting the Go build output `-o` flag to be `./my_rest_app` rather than use a randomly generated file name. Baloon will still delete this executable during Teardown.
+
 # Licence
 
 MIT - Dominic Pettifer

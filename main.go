@@ -60,6 +60,8 @@ func NewScriptPath(path string) Script {
 
 // App represents settings and arguments for your Go HTTP API executable.
 type App struct {
+	// BuildArguments is a list of build arguments to include when baloon
+	// tries to buld your App executable. They are run via "go build yourArgsHere..."
 	BuildArguments []string
 
 	// RunArguments is a list of command line arguments to
