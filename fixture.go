@@ -3,10 +3,10 @@ package baloon
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -41,25 +41,45 @@ func (fixture *Fixture) Setup() error {
 	appName := path.Base(appRoot)
 
 	// build app
-	cmdFile, err := ioutil.TempFile(appRoot, appName+"_")
-	if err != nil {
-		return fmt.Errorf("Error generating random file for program: %s", err.Error())
+	appSetup := fixture.config.AppSetup
+
+	buildArgs := appSetup.BuildArguments
+
+	containsOutputArg := false
+	containsBuildArg := false
+
+	for i, arg := range buildArgs {
+		if arg == "-o" {
+			containsOutputArg = true
+			fixture.appPath = buildArgs[i+1]
+		}
+		if arg == "build" {
+			containsBuildArg = true
+		}
 	}
 
-	appPath := cmdFile.Name()
-	fixture.appPath = appPath
-	cmdFile.Close()
+	if fixture.appPath == "" {
+		fixture.appPath = "./" + appName + "_" + randomCharacters(8)
+	}
 
-	cmd := exec.Command("go", "build", "-o", appPath)
+	if !containsBuildArg {
+		buildArgs = append([]string{"build"}, buildArgs...)
+	}
+
+	if !containsOutputArg {
+		buildArgs = append(buildArgs, "-o", fixture.appPath)
+	}
+
+	cmd := exec.Command("go", buildArgs...)
 	cmd.Dir = appRoot
 
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("Error building program: %s", err.Error())
 	}
 
 	// run app
-	appProcess := exec.Command(appPath, fixture.config.AppSetup.RunArguments...)
+	appProcess := exec.Command(fixture.appPath, appSetup.RunArguments...)
 	appProcess.Dir = appRoot
 
 	fixture.appProcess = appProcess
@@ -135,7 +155,8 @@ func (fixture *Fixture) Teardown() error {
 	}
 
 	// delete program file
-	err = os.Remove(fixture.appPath)
+	fullAppPath := filepath.Join(fixture.config.AppRoot, fixture.appPath)
+	err = os.Remove(fullAppPath)
 	if err != nil {
 		return fmt.Errorf("Error trying to delete complile binary: %s", err.Error())
 	}

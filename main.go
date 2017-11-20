@@ -60,6 +60,8 @@ func NewScriptPath(path string) Script {
 
 // App represents settings and arguments for your Go HTTP API executable.
 type App struct {
+	BuildArguments []string
+
 	// RunArguments is a list of command line arguments to
 	// include when your Go executable is run.
 	RunArguments []string
@@ -100,14 +102,6 @@ type UnitTest struct {
 
 	// Func is a function to run before each unit test is run.
 	Func func()
-}
-
-func truncate(text string, maxLength int, affix string) string {
-	if len(text) <= maxLength {
-		return text
-	}
-
-	return text[:maxLength] + affix
 }
 
 // NewFixture returns a Fixture, but also verifies that everything has been set up correctly.

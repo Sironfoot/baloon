@@ -1,6 +1,7 @@
 package baloon_test
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -181,4 +182,49 @@ func TestFixtureTeardown(t *testing.T) {
 	}
 
 	fixture.Close()
+}
+
+func TestBuildArguments(t *testing.T) {
+	appRootPath, _ := filepath.Abs("./app/")
+	programName := "baloon_test"
+
+	fixture, err := baloon.NewFixture(baloon.FixtureConfig{
+		AppRoot: appRootPath,
+		AppSetup: baloon.App{
+			BuildArguments: []string{
+				"-o", "./" + programName,
+			},
+			RunArguments: []string{
+				"-ready_statement", "Running",
+			},
+			WaitForOutputLine: "Running",
+			WaitTimeout:       time.Second * 2,
+		},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Setup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = os.Stat(filepath.Join(appRootPath, programName))
+	if err != nil && os.IsNotExist(err) {
+		t.Errorf("Should generate program executable '%s' but wasn't present", programName)
+	} else if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fixture.Teardown()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = os.Stat(filepath.Join(appRootPath, programName))
+	if err == nil || !os.IsNotExist(err) {
+		t.Errorf("Should delete program executable afterward.")
+	}
 }
