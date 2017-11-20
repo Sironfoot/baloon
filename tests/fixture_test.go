@@ -64,7 +64,7 @@ func TestNewFixture(t *testing.T) {
 func TestFixtureSetup(t *testing.T) {
 	appRootPath, _ := filepath.Abs("./app/")
 
-	// can't run mutliple times
+	// can't run multiple times
 	fixture, err := baloon.NewFixture(baloon.FixtureConfig{
 		AppRoot: appRootPath,
 		AppSetup: baloon.App{
@@ -123,7 +123,7 @@ func TestFixtureSetup(t *testing.T) {
 func TestFixtureTeardown(t *testing.T) {
 	appRootPath, _ := filepath.Abs("./app/")
 
-	// can't run mutliple times
+	// can't run multiple times
 	fixture, err := baloon.NewFixture(baloon.FixtureConfig{
 		AppRoot: appRootPath,
 		AppSetup: baloon.App{

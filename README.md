@@ -1,26 +1,24 @@
 [![GoDoc](https://godoc.org/github.com/sironfoot/baloon?status.svg)](https://godoc.org/github.com/sironfoot/baloon)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sironfoot/baloon)](https://goreportcard.com/report/github.com/sironfoot/baloon)
-[![GitHub release](https://img.shields.io/badge/version-0.1-red.svg?style=flat)](https://github.com/sironfoot/baloon/releases)
+[![GitHub release](https://img.shields.io/badge/version-1.0-orange.svg?style=flat)](https://github.com/sironfoot/baloon/releases)
 
 # baloon
 Baloon is a Setup and Teardown test fixture library for end-to-end testing of HTTP APIs written in Go.
 
-> **WARNING! Baloon API is unstable and may undergo changes. Please use with caution for the time being.**
-
 Baloon will setup a database with your sample data, build and run your Go executable, run your tests, and teardown your database afterwards. It also supports setup and teardown routines per unit test.
 
-Baloon is designed to be used in conjunction with an API testing library such [baloo](https://github.com/h2non/baloo) (which inspired me to write this test fixture library, hence the name baloon). The goal is to make HTTP API testing less brittle by providing clean and repeatable setup and teardown processes for your main external dependencies, namely databases and compiling/running your program.
+Baloon is designed to be used in conjunction with an API testing library such [baloo](https://github.com/h2non/baloo) (which inspired me to write this test fixture library, hence the name baloon). The goal is to make HTTP API testing less brittle by providing clean and repeatable setup/teardown processes for your main external dependencies, namely databases and compiling/running your program.
 
 ## Installation
 
 ```ssh
-go get gopkg.in/sironfoot/baloon.v0
+go get gopkg.in/sironfoot/baloon.v1
 ```
 
 Or using govendor:
 
 ```ssh
-govendor fetch github.com/sironfoot/baloon@v0.1.0
+govendor fetch github.com/sironfoot/baloon@v1
 ```
 
 ## Requirements
@@ -318,11 +316,11 @@ appSetup := baloon.App{
 	BuildArguments: []string{
 		"-o", "./my_rest_app",
 	},
-    RunArguments: []string{
-        "-ready_statement", "Test App is Ready",
-    },
-    WaitForOutputLine: "Test App is Ready",
-    WaitTimeout:       5 * time.Second,
+	RunArguments: []string{
+		"-ready_statement", "Test App is Ready",
+	},
+	WaitForOutputLine: "Test App is Ready",
+	WaitTimeout:       5 * time.Second,
 }
 ```
 
