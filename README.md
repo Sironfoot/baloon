@@ -93,7 +93,7 @@ We have 2 setups here because we need to connect the the database server instanc
 Baloon uses the "database/sql" package, so will support any database that supports that, but make sure your database driver is imported:
 
 ```go
-import "_ "github.com/lib/pq"
+import _ "github.com/lib/pq"
 ```
 
 Scripts can be literal scripts (`CREATE DATABASE northwind;`), or paths to files containing scripts (`./sql/create tables.sql`). Paths are relative to your app root (see 1. App Root above). Paths support globbing patterns (e.g. `./sql/*.sql`).
@@ -156,19 +156,20 @@ func TestMain(m *testing.M) {
 
 	fixture, err = baloon.NewFixture(setup)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
+	defer fixture.Close()
 
 	err = fixture.Setup()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
 	code := m.Run()
 
 	err = fixture.Teardown()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
 	os.Exit(code)
@@ -186,8 +187,9 @@ In the TestMain func after creating a new Fixture:
 ```go
 fixture, err = baloon.NewFixture(setup)
 if err != nil {
-	log.Fatal(err)
+	log.Panic(err)
 }
+defer fixture.Close()
 
 fixture.AddUnitTestSetup(baloon.UnitTest{
 	DatabaseRoutines: []baloon.DB{
