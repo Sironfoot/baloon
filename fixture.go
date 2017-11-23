@@ -149,14 +149,16 @@ func (fixture *Fixture) Teardown() error {
 	fixture.alreadyAttemptedTeardown = true
 
 	// shut down app
-	err := fixture.appProcess.Process.Kill()
-	if err != nil {
-		return fmt.Errorf("Error shutting down program: %s", err.Error())
+	if fixture.appProcess != nil && fixture.appProcess.Process != nil {
+		err := fixture.appProcess.Process.Kill()
+		if err != nil {
+			return fmt.Errorf("Error shutting down program: %s", err.Error())
+		}
 	}
 
 	// delete program file
 	fullAppPath := filepath.Join(fixture.config.AppRoot, fixture.appPath)
-	err = os.Remove(fullAppPath)
+	err := os.Remove(fullAppPath)
 	if err != nil {
 		return fmt.Errorf("Error trying to delete complile binary: %s", err.Error())
 	}
@@ -241,19 +243,24 @@ func (fixture *Fixture) UnitTestTeardown() error {
 // Close will attempt to free up any resources created by the Fixture.
 // Make sure to call this before any log.Fatal() or os.Exit() calls.
 func (fixture *Fixture) Close() {
-	// attempt to clean things up as best we can
+	defer func() {
+		// in case teardown panics
+		recover()
+
+		// kill process if it's running
+		if fixture.appProcess != nil && fixture.appProcess.Process != nil {
+			fixture.appProcess.Process.Kill()
+		}
+
+		// delete executable if it exists
+		_, err := os.Stat(fixture.appPath)
+		if err == nil {
+			os.Remove(fixture.appPath)
+		}
+	}()
+
+	// attempt to run teardown if not already
 	if !fixture.alreadyAttemptedTeardown {
 		fixture.Teardown()
-	}
-
-	// kill process if it's running
-	if fixture.appProcess != nil && fixture.appProcess.Process != nil {
-		fixture.appProcess.Process.Kill()
-	}
-
-	// delete executable if it exists
-	_, err := os.Stat(fixture.appPath)
-	if err == nil {
-		os.Remove(fixture.appPath)
 	}
 }
