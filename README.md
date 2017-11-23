@@ -180,63 +180,82 @@ func TestMain(m *testing.M) {
 
 We can run setup and teardown routines per individual unit test. A use case is to add sample data to our database to test against, but have that data reset after each test, as some tests might insert or delete data.
 
-We can also run bespoke code during unit test setup and teardown. For instance, getting an example admin and non-admin user ID if our primary key IDs are auto-generated and therefore will be different after each setup.
+We can also run bespoke code during unit test setup and teardown. For instance, getting an example admin and non-admin user ID if our primary key IDs are auto-generated, and therefore will be different after each setup.
 
 In the TestMain func after creating a new Fixture:
 
 ```go
-fixture, err = baloon.NewFixture(setup)
-if err != nil {
-	log.Panic(err)
+var adminUserID string
+var stdUserID string
+
+func TestMain(m *testing.M) {
+	// setup code here (snip...)
+
+	fixture, err = baloon.NewFixture(setup)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer fixture.Close()
+
+	fixture.AddUnitTestSetup(baloon.UnitTest{
+		DatabaseRoutines: []baloon.DB{
+			baloon.DB{
+				Connection: baloon.DBConn{
+					Driver: "postgres",
+					String: "postgres://user:pw@localhost:5432/northwind?sslmode=disable",
+				},
+				Scripts: []baloon.Script{
+					baloon.NewScriptPath("./tests/testData/*.sql"),
+				},
+			},
+		},
+		Func: func(t *testing.T) {
+			adminUserID, err = getAdminUserID("admin@example.com")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			stdUserID, err = getStandardUserID("user@example.com")
+			if err != nil {
+				t.Fatal(err)
+			}
+		},
+	})
+
+	fixture.AddUnitTestTeardown(baloon.UnitTest{
+		DatabaseRoutines: []baloon.DB{
+			baloon.DB{
+				Connection: baloon.DBConn{
+					Driver: "postgres",
+					String: "postgres://user:pw@localhost:5432/northwind?sslmode=disable",
+				},
+				Scripts: []baloon.Script{
+					baloon.NewScript("DELETE FROM orders;"),
+					baloon.NewScript("DELETE FROM customers;"),
+					baloon.NewScript("DELETE FROM products;"),
+				},
+			},
+		},
+		Func: func(t *testing.T) { },
+	})
 }
-defer fixture.Close()
-
-fixture.AddUnitTestSetup(baloon.UnitTest{
-	DatabaseRoutines: []baloon.DB{
-		baloon.DB{
-			Connection: baloon.DBConn{
-				Driver: "postgres",
-				String: "postgres://user:pw@localhost:5432/northwind?sslmode=disable",
-			},
-			Scripts: []baloon.Script{
-				baloon.NewScriptPath("./tests/testData/*.sql"),
-			},
-		},
-	},
-	Func: func() {
-		adminUserID = getAdminUserID("admin@example.com")
-		stdUserID = getStandardUserID("user@example.com")
-	},
-})
-
-fixture.AddUnitTestTeardown(baloon.UnitTest{
-	DatabaseRoutines: []baloon.DB{
-		baloon.DB{
-			Connection: baloon.DBConn{
-				Driver: "postgres",
-				String: "postgres://user:pw@localhost:5432/northwind?sslmode=disable",
-			},
-			Scripts: []baloon.Script{
-				baloon.NewScript("DELETE FROM orders;"),
-				baloon.NewScript("DELETE FROM customers;"),
-				baloon.NewScript("DELETE FROM products;"),
-			},
-		},
-	},
-	Func: func() { },
-})
 ```
 
 Then use these in each unit test:
 
 ```go
 func TestCustomers_List(t *testing.T) {
-	fixture.UnitTestSetup()
-	defer fixture.UnitTestTeardown()
+	fixture.UnitTestSetup(t)
+	defer fixture.UnitTestTeardown(t)
 
 	// test code Here
 }
 ```
+
+Note: Any database-routine failures during unit test setup/teardowns will result in `T.Fatal()` being called via the `testing.T` struct passed in to UnitTestSetup and UnitTestTeardown methods.
+
+For errors in your own bespoke code, you can decide what to do yourself using the `testing.T` struct passed in.
+
 ## Tips
 
 #### Dropping Database Connections

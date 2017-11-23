@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"testing"
 	"time"
 )
 
@@ -185,30 +186,28 @@ func (fixture *Fixture) AddUnitTestSetup(setup UnitTest) {
 
 // UnitTestSetup will run all UnitTest setup routines. This is run at the start of each individual test,
 // e.g. func TestSomething(t *testing.T), within your test suite.
-func (fixture *Fixture) UnitTestSetup() error {
+func (fixture *Fixture) UnitTestSetup(t *testing.T) {
 	if !fixture.alreadyAttemptedSetup {
-		return fmt.Errorf("Please run Setup() first before calling TestSetup()")
+		t.Fatalf("Please run Setup() first before calling TestSetup()")
 	}
 
 	if fixture.alreadyAttemptedTeardown {
-		return fmt.Errorf("Fixture has already been teared down")
+		t.Fatalf("Fixture has already been teared down")
 	}
 
 	for i, testSetup := range fixture.unitTestSetups {
 		for dbIndex, dbSetup := range testSetup.DatabaseRoutines {
 			err := dbSetup.run(fixture.config.AppRoot)
 			if err != nil {
-				return fmt.Errorf("Error running Database Setup at index %d for TestSetup at index %d: %s",
+				t.Fatalf("Error running Database Setup at index %d for TestSetup at index %d: %s",
 					dbIndex, i, err.Error())
 			}
 		}
 
 		if testSetup.Func != nil {
-			testSetup.Func()
+			testSetup.Func(t)
 		}
 	}
-
-	return nil
 }
 
 // AddUnitTestTeardown adds a UnitTest teardown routine to the test Fixture
@@ -218,30 +217,28 @@ func (fixture *Fixture) AddUnitTestTeardown(teardown UnitTest) {
 
 // UnitTestTeardown will run all UnitTest teardown routines. This is run at the end of each individual test,
 // e.g. func TestSomething(t *testing.T), within your test suite.
-func (fixture *Fixture) UnitTestTeardown() error {
+func (fixture *Fixture) UnitTestTeardown(t *testing.T) {
 	if !fixture.alreadyAttemptedSetup {
-		return fmt.Errorf("Please run Setup() first before calling TestTeardown()")
+		t.Fatalf("Please run Setup() first before calling TestTeardown()")
 	}
 
 	if fixture.alreadyAttemptedTeardown {
-		return fmt.Errorf("Fixture has already been teared down")
+		t.Fatalf("Fixture has already been teared down")
 	}
 
 	for i, testTeardown := range fixture.unitTestTeardowns {
 		for dbIndex, dbSetup := range testTeardown.DatabaseRoutines {
 			err := dbSetup.run(fixture.config.AppRoot)
 			if err != nil {
-				return fmt.Errorf("Error running Database Setup at index %d for TestTeardown at index %d: %s",
+				t.Fatalf("Error running Database Setup at index %d for TestTeardown at index %d: %s",
 					dbIndex, i, err.Error())
 			}
 		}
 
 		if testTeardown.Func != nil {
-			testTeardown.Func()
+			testTeardown.Func(t)
 		}
 	}
-
-	return nil
 }
 
 // Close will attempt to free up any resources created by the Fixture.

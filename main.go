@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 )
 
@@ -103,7 +104,7 @@ type UnitTest struct {
 	DatabaseRoutines []DB
 
 	// Func is a function to run before each unit test is run.
-	Func func()
+	Func func(t *testing.T)
 }
 
 // NewFixture returns a Fixture, but also verifies that everything has been set up correctly.
