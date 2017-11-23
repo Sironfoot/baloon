@@ -1,6 +1,6 @@
 [![GoDoc](https://godoc.org/github.com/sironfoot/baloon?status.svg)](https://godoc.org/github.com/sironfoot/baloon)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sironfoot/baloon)](https://goreportcard.com/report/github.com/sironfoot/baloon)
-[![GitHub release](https://img.shields.io/badge/version-1.0-orange.svg?style=flat)](https://github.com/sironfoot/baloon/releases)
+[![GitHub release](https://img.shields.io/badge/version-2.0-orange.svg?style=flat)](https://github.com/sironfoot/baloon/releases)
 
 # baloon
 Baloon is a Setup and Teardown test fixture library for end-to-end testing of HTTP APIs written in Go.
@@ -12,13 +12,13 @@ Baloon is designed to be used in conjunction with an API testing library such [b
 ## Installation
 
 ```ssh
-go get gopkg.in/sironfoot/baloon.v1
+go get gopkg.in/sironfoot/baloon.v2
 ```
 
 Or using govendor:
 
 ```ssh
-govendor fetch github.com/sironfoot/baloon@v1
+govendor fetch github.com/sironfoot/baloon@v2
 ```
 
 ## Requirements
@@ -238,6 +238,8 @@ func TestMain(m *testing.M) {
 		},
 		Func: func(t *testing.T) { },
 	})
+
+	// fixture setup/teardown, run tests etc. (snip...)
 }
 ```
 
