@@ -158,9 +158,13 @@ func (fixture *Fixture) Teardown() error {
 
 	// delete program file
 	fullAppPath := filepath.Join(fixture.config.AppRoot, fixture.appPath)
-	err := os.Remove(fullAppPath)
-	if err != nil {
-		return fmt.Errorf("Error trying to delete complile binary: %s", err.Error())
+
+	_, err := os.Stat(fullAppPath)
+	if err == nil {
+		err := os.Remove(fullAppPath)
+		if err != nil {
+			return fmt.Errorf("Error trying to delete complile binary: %s", err.Error())
+		}
 	}
 
 	// run database teardown
